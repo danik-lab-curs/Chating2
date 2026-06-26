@@ -1,15 +1,25 @@
-require("dotenv").config();
-const { Telegraf, Markup } = require("telegraf");
+bot.on("message", async (ctx) => {
+  const wad = ctx.message?.web_app_data;
+  if (!wad?.data) return;
 
-const bot = new Telegraf(process.env.BOT_TOKEN);
-const webAppUrl = process.env.WEBAPP_URL;
+  try {
+    const payload = JSON.parse(wad.data);
 
-bot.start((ctx) => {
-  return ctx.reply(
-    "Открой Mini App:",
-    Markup.keyboard([Markup.button.webApp("Открыть приложение", webAppUrl)]).resize()
-  );
+    if (payload.type === "homework") {
+      const text =
+        `📩 Домашка из Mini App\n` +
+        `Урок: ${payload.lessonTitle} (${payload.lessonId})\n\n` +
+        `${payload.text}`;
+
+      // ответ пользователю
+      await ctx.reply("✅ Домашка принята. Скоро будет фидбек.");
+
+      // опционально: продублировать тебе в личку (если ты знаешь свой tg_id)
+      // await bot.telegram.sendMessage(ТВОЙ_TG_ID, text);
+
+      console.log(text);
+    }
+  } catch (e) {
+    console.log("Failed to parse web_app_data", e);
+  }
 });
-
-bot.launch();
-console.log("Bot is running...");
